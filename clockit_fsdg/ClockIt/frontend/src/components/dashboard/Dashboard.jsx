@@ -1,0 +1,148 @@
+// import Todo from "./Todo";
+
+// export default function Dashboard({ user, onLogout }) {
+//   return (
+//     <div className="dashboard">
+
+//       <h1>Welcome, {user.name}</h1>
+//       <button onClick={onLogout}>Logout</button>
+
+//       <Todo />
+
+//     </div>
+//   );
+// }
+
+// import { useNavigate } from "react-router-dom";
+
+// function Dashboard() {
+
+//     const navigate = useNavigate();
+
+//     return (
+//         <div>
+
+//             <h1>ClockIt</h1>
+
+//             <button onClick={() => navigate("/calendar")}>
+//                 Calendar
+//             </button>
+
+//             <button onClick={() => navigate("/attendance")}>
+//                 Attendance
+//             </button>
+
+//             <button onClick={() => navigate("/todo")}>
+//                 To-Do
+//             </button>
+
+//             <button onClick={() => navigate("/timer")}>
+//                 Study Timer
+//             </button>
+
+//         </div>
+//     );
+// }
+
+// export default Dashboard;
+
+import { useNavigate } from "react-router-dom";
+import Navbar from "../Navbar.jsx";
+import "./Dashboard.css";
+
+function Dashboard({ user, onLogout }) {
+    const navigate = useNavigate();
+
+    const dashboardCards = [
+        {
+            title: "Calendar",
+            description: "View your schedule, classes and events.",
+            icon: "📅",
+            path: "/calendar",
+        },
+        {
+            title: "Attendance",
+            description: "Track your attendance across all subjects.",
+            icon: "📊",
+            path: "/attendance",
+        },
+        {
+            title: "To-Do",
+            description: "Manage your tasks and stay organised.",
+            icon: "✓",
+            path: "/todo",
+        },
+        {
+            title: "Study Timer",
+            description: "Focus on your studies with timed sessions.",
+            icon: "⏱️",
+            path: "/timer",
+        },
+    ];
+
+    return (
+        <div className="dashboard">
+
+            <Navbar user={user} onLogout={onLogout} />
+
+            <header className="dashboard-header">
+                <h1>ClockIt</h1>
+
+                <p>
+                    Organise your time. Stay on track.
+                </p>
+            </header>
+
+
+            <main className="dashboard-content">
+
+                <h2>Dashboard</h2>
+
+                <p className="dashboard-subtitle">
+                    What would you like to do today?
+                </p>
+
+
+                <div className="dashboard-grid">
+
+                    {dashboardCards.map((card) => (
+
+                        <div
+                            key={card.title}
+                            className="dashboard-card"
+                            onClick={() => navigate(card.path)}
+                        >
+
+                            <div className="dashboard-card-icon">
+                                {card.icon}
+                            </div>
+
+                            <div className="dashboard-card-content">
+
+                                <h3>
+                                    {card.title}
+                                </h3>
+
+                                <p>
+                                    {card.description}
+                                </p>
+
+                            </div>
+
+                            <span className="dashboard-card-arrow">
+                                →
+                            </span>
+
+                        </div>
+
+                    ))}
+
+                </div>
+
+            </main>
+
+        </div>
+    );
+}
+
+export default Dashboard;

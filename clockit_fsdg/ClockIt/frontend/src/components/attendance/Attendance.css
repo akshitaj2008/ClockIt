@@ -1,0 +1,460 @@
+/* ================================
+   ATTENDANCE PAGE
+================================ */
+
+.attendance-page {
+    min-height: 100vh;
+    padding: 35px 45px;
+    background: #0A3323;
+    color: #F7F4D5;
+    box-sizing: border-box;
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.attendance-header {
+    margin-bottom: 30px;
+}
+
+.attendance-header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.attendance-header p {
+    margin: 7px 0 0;
+    color: #5F6F57;
+    font-size: 15px;
+}
+
+
+/* ================================
+   OVERALL SECTION
+================================ */
+
+.overall-section {
+    margin-bottom: 38px;
+}
+
+.overall-card {
+    border-left: 5px solid #0A3323;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    background: #F7F4D5;
+
+    border-radius: 18px;
+
+    padding: 30px 35px;
+
+    box-shadow:
+        0 4px 18px rgba(10, 51, 35, 0.14);
+
+    border: 1px solid rgba(10, 51, 35, 0.16);
+}
+
+
+/* Overall percentage */
+
+.overall-left {
+    min-width: 220px;
+}
+
+.section-label {
+    margin: 0 0 8px;
+
+    color: #5F6F57;
+
+    font-size: 14px;
+
+    font-weight: 500;
+}
+
+.overall-left h2 {
+    color: #0A3323;
+    margin: 0;
+
+    font-size: 52px;
+
+    font-weight: 700;
+}
+
+.attendance-subtext {
+    margin: 5px 0 0;
+
+    color: #7B846F;
+
+    font-size: 13px;
+}
+
+
+/* ================================
+   OVERALL STATISTICS
+================================ */
+
+.overall-stats {
+    display: flex;
+
+    gap: 45px;
+
+    padding-right: 20px;
+}
+
+.stat-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+}
+
+.stat-dot {
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+
+    display: block;
+}
+
+.present-dot {
+    background: #839958;
+}
+
+.absent-dot {
+    background: #D3968C;
+}
+
+.cancelled-dot {
+    background: #105666;
+}
+
+.stat-item div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.stat-item strong {
+    font-size: 22px;
+}
+
+.stat-item span:not(.stat-dot) {
+    font-size: 13px;
+
+    color: #68745F;
+}
+
+
+/* ================================
+   CATEGORY SECTION
+================================ */
+
+.category-section {
+    margin-top: 10px;
+}
+
+.section-heading {
+    margin-bottom: 20px;
+}
+
+.section-heading h2 {
+    margin: 0;
+
+    font-size: 22px;
+
+    font-weight: 650;
+}
+
+.section-heading p {
+    margin: 5px 0 0;
+
+    color: #68745F;
+
+    font-size: 14px;
+}
+
+
+/* ================================
+   CATEGORY GRID
+================================ */
+
+.category-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(280px, 1fr));
+
+    gap: 20px;
+}
+
+
+/* ================================
+   CATEGORY CARD
+================================ */
+
+.category-card {
+    border-top: 4px solid #839958;
+    background: #F7F4D5;
+
+    
+    color: #0A3323;
+    
+    border: 1px solid rgba(10, 51, 35, 0.16);
+
+    border-radius: 16px;
+
+    padding: 23px;
+
+    box-shadow:
+        0 3px 14px rgba(10, 51, 35, 0.12);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 7px 22px rgba(10, 51, 35, 0.20);
+}
+
+
+/* ================================
+   CATEGORY CARD HEADER
+================================ */
+
+.category-card-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+}
+
+.category-card-header h3 {
+    margin: 0;
+
+    font-size: 19px;
+
+    font-weight: 650;
+}
+
+.category-card-header p {
+    margin: 5px 0 0;
+
+    color: #7B846F;
+
+    font-size: 12px;
+}
+
+
+/* ================================
+   PERCENTAGE
+================================ */
+
+.category-percentage {
+    color: #105666;
+    font-size: 25px;
+
+    font-weight: 700;
+}
+
+.category-percentage.good {
+    color: #0A3323;
+}
+
+.category-percentage.low {
+    color: #B96F67;
+}
+
+
+/* ================================
+   PROGRESS BAR
+================================ */
+
+.progress-container {
+    width: 100%;
+
+    height: 8px;
+
+    background: rgba(10, 51, 35, 0.16);
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    margin-bottom: 22px;
+}
+
+.progress-bar {
+    height: 100%;
+
+    border-radius: 10px;
+
+    transition:
+        width 0.4s ease;
+}
+
+.progress-bar.good {
+    background: #839958;
+}
+
+.progress-bar.low {
+    background: #D3968C;
+}
+
+
+/* ================================
+   CATEGORY STATISTICS
+================================ */
+
+.category-stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 10px;
+
+    padding-top: 17px;
+
+    border-top: 1px solid rgba(10, 51, 35, 0.16);
+}
+
+.category-stats > div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+
+    color: #7B846F;
+}
+
+.category-stats strong {
+    font-size: 18px;
+}
+
+
+/* ================================
+   EMPTY STATE
+================================ */
+
+.empty-attendance {
+    background: #F7F4D5;
+
+    border: 1px solid rgba(10, 51, 35, 0.16);
+
+    border-radius: 16px;
+
+    padding: 45px 20px;
+
+    text-align: center;
+}
+
+.empty-attendance h3 {
+    margin: 0 0 8px;
+
+    font-size: 18px;
+}
+
+.empty-attendance p {
+    margin: 0;
+
+    color: #68745F;
+
+    font-size: 14px;
+}
+
+
+/* ================================
+   LOADING / ERROR
+================================ */
+
+.attendance-loading,
+.attendance-error {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 300px;
+
+    font-size: 15px;
+}
+
+.attendance-error {
+    color: #B96F67;
+}
+
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 800px) {
+
+    .attendance-page {
+        padding: 25px 20px;
+    }
+
+    .overall-card {
+    border-left: 5px solid #0A3323;
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 30px;
+    }
+
+    .overall-stats {
+        width: 100%;
+
+        justify-content: space-between;
+
+        padding-right: 0;
+
+        gap: 15px;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .attendance-header h1 {
+        font-size: 27px;
+    }
+
+    .overall-left h2 {
+    color: #0A3323;
+        font-size: 44px;
+    }
+
+    .overall-stats {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+}

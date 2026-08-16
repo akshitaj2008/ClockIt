@@ -1,0 +1,256 @@
+/* =========================
+   Palette (from brand moodboard)
+   #0A3323 dark green    - deepest ink / borders
+   #839958 moss green    - primary action
+   #F7F4D5 beige          - light surfaces
+   #D3968C rosy brown     - warm accent
+   #105666 midnight green - page background / headings
+========================= */
+
+.calendar-page {
+    --ci-dark-green: #0a3323;
+    --ci-moss-green: #839958;
+    --ci-beige: #f7f4d5;
+    --ci-rosy-brown: #d3968c;
+    --ci-midnight-green: #105666;
+
+    padding: 24px 28px 40px;
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--ci-midnight-green) 0%, #0d3f4d 100%);
+    font-family: 'Courier New', Courier, monospace;
+    box-sizing: border-box;
+}
+
+/* Navbar (rendered inside the calendar page) */
+.calendar-page .titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 14px 20px;
+    margin-bottom: 20px;
+
+    background: var(--ci-dark-green);
+    border-radius: 12px;
+
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.calendar-page .titlebar h1 {
+    margin: 0;
+    color: var(--ci-beige);
+    font-size: 22px;
+    letter-spacing: 0.5px;
+}
+
+.calendar-page .titlebar button {
+    padding: 8px 16px;
+
+    border: 1px solid var(--ci-rosy-brown);
+    border-radius: 6px;
+
+    background: transparent;
+    color: var(--ci-rosy-brown);
+
+    font-family: inherit;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.calendar-page .titlebar button:hover {
+    background: var(--ci-rosy-brown);
+    color: var(--ci-dark-green);
+}
+
+/* Header containing ClockIt + Add Event */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.calendar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ClockIt title */
+.page-header h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ci-rosy-brown);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Add Event / Attendance / Dashboard buttons */
+.add-event-btn,
+.attendance-btn {
+    margin-bottom: 20px;
+
+    padding: 10px 18px;
+
+    border: none;
+    border-radius: 6px;
+
+    background-color: var(--ci-moss-green);
+    color: var(--ci-beige);
+
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.add-event-btn:hover,
+.attendance-btn:hover {
+    background-color: var(--ci-dark-green);
+    color: var(--ci-beige);
+    transform: translateY(-1px);
+}
+
+.add-event-btn:active,
+.attendance-btn:active {
+    transform: translateY(0);
+}
+
+/* Category legend */
+.category-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-bottom: 16px;
+    padding: 12px 16px;
+
+    background: rgba(247, 244, 213, 0.08);
+    border: 1px solid rgba(247, 244, 213, 0.18);
+    border-radius: 10px;
+}
+
+.category-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 5px 12px;
+
+    background: var(--ci-beige);
+    border-radius: 20px;
+
+    color: var(--ci-dark-green);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.category-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(10, 51, 35, 0.15);
+}
+
+/* Calendar container */
+.calendar-page .fc {
+    background-color: var(--ci-beige);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+
+/* Calendar toolbar */
+.calendar-page .fc-toolbar-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ci-dark-green);
+}
+
+
+/* Calendar buttons */
+.calendar-page .fc-button {
+    border-radius: 5px;
+    background-color: var(--ci-midnight-green) !important;
+    border-color: var(--ci-midnight-green) !important;
+    text-transform: capitalize;
+}
+
+.calendar-page .fc-button:hover {
+    background-color: var(--ci-dark-green) !important;
+    border-color: var(--ci-dark-green) !important;
+}
+
+.calendar-page .fc-button-active,
+.calendar-page .fc-button:not(:disabled):active {
+    background-color: var(--ci-rosy-brown) !important;
+    border-color: var(--ci-rosy-brown) !important;
+    color: var(--ci-dark-green) !important;
+}
+
+.calendar-page .fc-today-button:disabled {
+    opacity: 0.5;
+}
+
+
+/* Event appearance */
+.calendar-page .fc-event {
+    cursor: pointer;
+    border-radius: 5px;
+    border-width: 0 0 0 3px;
+    padding: 1px 4px;
+    font-size: 12.5px;
+}
+
+.calendar-page .fc-daygrid-event {
+    border-radius: 5px;
+}
+
+/* Highlight the All-Day section */
+.fc .fc-timegrid-divider,
+.fc .fc-timegrid-axis-frame {
+  background-color: rgba(247, 244, 213, 0.65);
+  color: #0a3323;
+  font-size: 13px;
+  text-align: center;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  border-color: #0a3323;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: #0a3323;
+}
+
+.fc .fc-col-header-cell {
+  background-color: #839958;
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: #0a3323;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 10px;
+}
+
+.fc .fc-timegrid-slot-label {
+  background-color: #839958;
+  color: #0a3323;
+  font-size: 13px;
+  text-align: center;
+  padding: 10px;
+}
+
+.fc .fc-day-today {
+  background-color: rgba(211, 150, 140, 0.18) !important;
+}

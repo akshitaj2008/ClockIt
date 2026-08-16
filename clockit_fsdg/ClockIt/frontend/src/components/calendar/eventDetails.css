@@ -1,0 +1,219 @@
+.event-details-overlay {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    background-color: rgba(10, 51, 35, 0.55);
+    backdrop-filter: blur(4px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+}
+
+
+.event-details-modal {
+    width: 420px;
+    max-width: 90%;
+
+    background-color: #f7f4d5;
+
+    border-radius: 14px;
+
+    padding: 25px;
+
+    box-sizing: border-box;
+
+    border: 1px solid rgba(10, 51, 35, 0.15);
+
+    box-shadow: 0 20px 60px rgba(10, 51, 35, 0.4);
+}
+
+
+/* Header */
+
+.event-details-header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 20px;
+    padding: 4px 4px 4px 14px;
+
+    border-left: 5px solid #839958;
+}
+
+
+.event-details-header h2 {
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    font-size: 22px;
+    color: #0a3323;
+}
+
+.event-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+
+.close-button {
+    border: none;
+
+    background: transparent;
+
+    font-size: 26px;
+    line-height: 1;
+
+    color: #105666;
+
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: 0.2s ease;
+}
+
+.close-button:hover {
+    background: #0a3323;
+    color: #f7f4d5;
+}
+
+
+/* Event information */
+
+.event-info {
+    margin-bottom: 20px;
+    padding: 14px 16px;
+
+    background: rgba(16, 86, 102, 0.06);
+    border-radius: 10px;
+}
+
+
+.event-info p {
+    margin: 8px 0;
+    color: #0a3323;
+    font-size: 14.5px;
+}
+
+.event-info strong {
+    color: #105666;
+}
+
+
+/* Attendance */
+
+.attendance-section {
+    padding: 20px 0;
+
+    border-top: 1px solid rgba(10, 51, 35, 0.15);
+    border-bottom: 1px solid rgba(10, 51, 35, 0.15);
+
+    margin-bottom: 20px;
+}
+
+
+.attendance-section h3 {
+    margin-top: 0;
+    color: #0a3323;
+}
+
+
+.attendance-buttons {
+    display: flex;
+
+    gap: 10px;
+}
+
+
+.attendance-buttons button {
+    flex: 1;
+
+    padding: 10px;
+
+    border: 1px solid #cbd5c0;
+
+    border-radius: 6px;
+
+    background-color: white;
+    color: #0a3323;
+
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+
+.attendance-buttons button:hover {
+    background-color: #eef1e6;
+}
+
+
+.attendance-buttons .attendance-active {
+    background-color: #839958;
+
+    color: #f7f4d5;
+
+    border-color: #839958;
+}
+
+
+/* Edit / Delete */
+
+.event-actions {
+    display: flex;
+
+    gap: 10px;
+}
+
+
+.edit-event-button,
+.delete-event-button {
+    flex: 1;
+
+    padding: 10px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+
+.edit-event-button {
+    background-color: #105666;
+    color: #f7f4d5;
+}
+
+.edit-event-button:hover {
+    background-color: #0a3323;
+}
+
+
+.delete-event-button {
+    background-color: #d3968c;
+
+    color: #0a3323;
+}
+
+.delete-event-button:hover {
+    background-color: #c17f74;
+}
