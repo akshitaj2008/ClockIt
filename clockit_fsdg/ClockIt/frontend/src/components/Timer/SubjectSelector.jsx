@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { API_BASE } from './config';
+import { handleAuthFailure } from '../../services/session.js';
 
 function SubjectSelector({ subjects, activeSubject, setActiveSubject, onSubjectAdded, disabled }) {
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
+  const [error, setError] = useState('');
 
   const handleAdd = async () => {
   if (!name.trim()) return;
@@ -16,18 +18,22 @@ function SubjectSelector({ subjects, activeSubject, setActiveSubject, onSubjectA
       },
       body: JSON.stringify({ name: name.trim() }),
     });
+    if (handleAuthFailure(res.status)) return;
     if (!res.ok) {
       const errText = await res.text();
       console.error('Add subject failed:', res.status, errText);
+      setError('Could not add that subject. Please try again.');
       return;
     }
     const newSubject = await res.json();
+    setError('');
     onSubjectAdded(newSubject);
     setActiveSubject(newSubject.name);
     setName('');
     setShowAdd(false);
   } catch (err) {
     console.error('Add subject network error:', err);
+    setError("Couldn't reach the server. Please try again.");
   }
 };
 
@@ -51,6 +57,14 @@ function SubjectSelector({ subjects, activeSubject, setActiveSubject, onSubjectA
           <button style={styles.smallBtnGold} onClick={handleAdd}>Add</button>
           <button style={styles.smallBtn} onClick={() => setShowAdd(false)}>Cancel</button>
         </div>
+      )}
+
+      {error && <p role="alert" style={{ color: '#E08A7A', fontSize: 13, margin: '0 0 12px' }}>{error}</p>}
+
+      {subjects.length === 0 && !showAdd && (
+        <p style={{ textAlign: 'center', color: '#93AFA0', fontSize: 14, margin: '0 0 20px' }}>
+          No subjects yet - press "+ Add subject" to create your first one.
+        </p>
       )}
 
       <div style={styles.subjectRow}>

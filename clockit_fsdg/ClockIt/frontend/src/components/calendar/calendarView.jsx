@@ -121,14 +121,10 @@ function CalendarView({ user, onLogout }) {
 
     async function handleAddEvent(eventData) {
         try {
-            console.log("Sending event to backend:", eventData);
-
             const response = await API.post(
                 "/events",
                 eventData
             );
-
-            console.log("Backend response:", response.data);
 
             const savedEvent = convertBackendEvent(response.data);
 
@@ -140,22 +136,7 @@ function CalendarView({ user, onLogout }) {
             setShowModal(false);
 
         } catch (error) {
-            console.error("FULL ERROR:", error);
-
-            console.error(
-                "Error message:",
-                error.message
-            );
-
-            console.error(
-                "Error response:",
-                error.response
-            );
-
-            console.error(
-                "Backend error data:",
-                error.response?.data
-            );
+            console.error("Error saving event:", error);
 
             alert(
                 error.response?.data?.message ||
@@ -177,7 +158,11 @@ function CalendarView({ user, onLogout }) {
 
             const savedCategory = response.data;
 
-            setCategories((prev) => [...prev, savedCategory]);
+            setCategories((prev) =>
+                prev.some((c) => c._id === savedCategory._id)
+                    ? prev
+                    : [...prev, savedCategory]
+            );
 
             return savedCategory;
         } catch (error) {
@@ -191,6 +176,29 @@ function CalendarView({ user, onLogout }) {
 
             return null;
         }
+    }
+
+    // Keep the calendar's own copy of the event in sync after attendance is
+    // marked, so reopening the event shows the right status (before this it
+    // showed the old one until the page was refreshed).
+    function handleAttendanceChange(eventId, status) {
+        setEvents((prev) =>
+            prev.map((item) =>
+                item.id === eventId
+                    ? {
+                        ...item,
+                        extendedProps: {
+                            ...item.extendedProps,
+                            attendance: status,
+                            backendEvent: {
+                                ...item.extendedProps.backendEvent,
+                                attendance: status
+                            }
+                        }
+                    }
+                    : item
+            )
+        );
     }
 
     function handleEventClick(info) {
@@ -298,9 +306,7 @@ function CalendarView({ user, onLogout }) {
                             setSelectedEvent(null)
                         }
 
-                        onEdit={() => {
-                            alert("Editing events is coming soon.");
-                        }}
+                        onAttendanceChange={handleAttendanceChange}
 
                         onDelete={handleDeleteEvent}
                     />

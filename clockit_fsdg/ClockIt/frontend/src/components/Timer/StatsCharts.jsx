@@ -4,7 +4,13 @@ import { buildWeeklyData, buildSubjectTotals } from './utils.js';
 function StatsCharts({ sessions, subjects }) {
   const weeklyData = buildWeeklyData(sessions);
   const subjectTotals = buildSubjectTotals(sessions, subjects);
-  const weekTotalMinutes = sessions.reduce((sum, s) => sum + Math.round(s.duration / 60), 0);
+  // "This week" = today and the previous 6 days, matching the bar chart.
+  const weekStart = new Date();
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(weekStart.getDate() - 6);
+  const weekTotalMinutes = sessions
+    .filter((s) => new Date(s.startedAt) >= weekStart)
+    .reduce((sum, s) => sum + Math.round(s.duration / 60), 0);
 
   return (
     <div>

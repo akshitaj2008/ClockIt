@@ -6,6 +6,7 @@ import StudyTimer from './StudyTimer.jsx';
 import StatsCharts from './StatsCharts.jsx';
 import SessionHistory from './SessionHistory.jsx';
 import Navbar from '../Navbar.jsx';
+import { handleAuthFailure } from '../../services/session.js';
 
 function Timer({ user, onLogout }) {
   const [subjects, setSubjects] = useState([]);
@@ -18,16 +19,26 @@ function Timer({ user, onLogout }) {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     };
 
+    // If the session has expired (401/403) the API returns an object, not a
+    // list. Treat that as "log in again" instead of crashing the page.
+    const toList = (res) => {
+      if (handleAuthFailure(res.status)) return [];
+      return res.ok ? res.json() : [];
+    };
+
     fetch(`${API_BASE}/api/subjects`, { headers: authHeaders })
-      .then((res) => res.json())
+      .then(toList)
       .then((data) => {
-        setSubjects(data);
-        if (data.length > 0) setActiveSubject(data[0].name);
-      });
+        const list = Array.isArray(data) ? data : [];
+        setSubjects(list);
+        if (list.length > 0) setActiveSubject(list[0].name);
+      })
+      .catch((err) => console.error('Error loading subjects:', err));
 
     fetch(`${API_BASE}/api/sessions`, { headers: authHeaders })
-      .then((res) => res.json())
-      .then((data) => setSessions(data));
+      .then(toList)
+      .then((data) => setSessions(Array.isArray(data) ? data : []))
+      .catch((err) => console.error('Error loading sessions:', err));
   }, []);
 
   const activeColor = subjects.find((s) => s.name === activeSubject)?.color || '#93AFA0';
@@ -46,7 +57,9 @@ function Timer({ user, onLogout }) {
         subjects={subjects}
         activeSubject={activeSubject}
         setActiveSubject={setActiveSubject}
-        onSubjectAdded={(s) => setSubjects([...subjects, s])}
+        onSubjectAdded={(s) =>
+          setSubjects((prev) => (prev.some((x) => x._id === s._id) ? prev : [...prev, s]))
+        }
       />
       <StudyTimer
         activeSubject={activeSubject}

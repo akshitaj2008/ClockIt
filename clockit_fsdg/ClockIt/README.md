@@ -26,7 +26,8 @@ The server listens on `PORT` (default `5000`).
 Required environment variables (see `.env.example`):
 - `MONGO_URI` — your MongoDB connection string
 - `PORT` — port to run the API on
-- `JWT_SECRET` — any long random string, used to sign login tokens
+- `JWT_SECRET` — any long random string, used to sign login tokens (the server refuses to start without it)
+- `CORS_ORIGIN` — optional; your deployed frontend URL (comma-separated for several). Leave empty locally to allow any origin
 
 > **Note:** if you're reusing credentials that were ever committed or shared
 > anywhere, rotate them (change the database password / regenerate the
@@ -71,23 +72,23 @@ different backend URL, copy `.env.example` to `.env` and set
   cluster's Network Access list in Atlas (or allow `0.0.0.0/0` for local
   development) and double-check `MONGO_URI` in `backend/.env`.
 
-### Trial account (works even while the database is down)
+### Trial account (only while the database is unreachable)
 
 ```
 email:    trial@clockit.dev
 password: trial1234
 ```
 
-While MongoDB is unreachable, this account logs in without touching the
-database at all, and every section (dashboard, calendar, attendance, to-do,
-study timer) automatically falls back to an in-memory data store so you can
-keep working on the rest of the app. Data created this way only lives as
-long as the backend process is running — it resets on restart and never
-touches MongoDB, so nothing is lost or duplicated once the real database
-connection comes back online.
+This login only works while MongoDB can't be reached; data is then kept in
+memory and disappears when the server restarts. Once the database is
+connected, use a normal signup instead.
 
-Once `MONGO_URI` is fixed and MongoDB connects successfully, the backend
-automatically switches back to using the real database for everyone
-(including new signups), and you can remove the trial account from
-`backend/routes/authRoutes.js` if you no longer need it — it's a hardcoded
-credential and shouldn't ship to production.
+## Deploying
+
+- Backend: set the root to `backend/`, build `npm install`, start `npm start`,
+  with `MONGO_URI`, `JWT_SECRET` and `CORS_ORIGIN` set.
+- Frontend: set the root to `frontend/`, build `npm run build`, output `dist`,
+  with `VITE_API_BASE_URL` set to the deployed backend URL (no trailing slash).
+- Single-page routing: `frontend/vercel.json` (Vercel) and
+  `frontend/public/_redirects` (Netlify) send every path to `index.html`.
+  Keep the one for your host and delete the other.

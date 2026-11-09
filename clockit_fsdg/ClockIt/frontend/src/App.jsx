@@ -5,6 +5,7 @@ import {
     Route,
     Navigate,
     useNavigate,
+    useLocation,
 } from "react-router-dom";
 
 // Main sections
@@ -19,6 +20,9 @@ import Signup from "./components/Signup.jsx";
 // Reads whatever the auth flow last stored, so a refresh keeps the session.
 function getStoredUser() {
     try {
+        // No token means we are not really logged in (e.g. it was cleared
+        // after expiry), so don't trust a leftover "user" entry.
+        if (!localStorage.getItem("token")) return null;
         const raw = localStorage.getItem("user");
         return raw ? JSON.parse(raw) : null;
     } catch {
@@ -28,9 +32,11 @@ function getStoredUser() {
 
 function LoginPage({ onLogin }) {
     const navigate = useNavigate();
+    const location = useLocation();
 
     return (
         <Login
+            notice={location.state?.message}
             onLogin={(user) => {
                 onLogin(user);
                 navigate("/dashboard");
@@ -45,7 +51,11 @@ function SignupPage() {
 
     return (
         <Signup
-            onSignupSuccess={() => navigate("/login")}
+            onSignupSuccess={() =>
+                navigate("/login", {
+                    state: { message: "Account created! Please log in." },
+                })
+            }
             onLogin={() => navigate("/login")}
         />
     );

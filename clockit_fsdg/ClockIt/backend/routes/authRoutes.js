@@ -7,6 +7,26 @@ const { isDbConnected } = require("../utils/dbStatus");
 
 const router = express.Router();
 
+// Built-in trial account (documented in the README). It only works while the
+// database is unreachable, when the app runs on the in-memory fallback store.
+// The id is a valid 24-hex ObjectId so tokens stay compatible if the
+// database comes back up.
+const TRIAL_EMAIL = "trial@clockit.dev";
+const TRIAL_PASSWORD = "trial1234";
+const TRIAL_USER = {
+  id: "000000000000000000000001",
+  name: "Trial User",
+  email: TRIAL_EMAIL,
+};
+
+function signToken(userId) {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+}
+
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
 
 // REGISTER
 // POST /api/auth/register
@@ -14,11 +34,19 @@ const router = express.Router();
 
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const name = String(req.body.name || "").trim();
+    const email = normalizeEmail(req.body.email);
+    const password = String(req.body.password || "");
 
     if (!name || !email || !password) {
       return res.status(400).json({
         message: "Name, email and password are required",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters long",
       });
     }
 
@@ -69,7 +97,8 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = normalizeEmail(req.body.email);
+    const password = String(req.body.password || "");
 
     if (!email || !password) {
       return res.status(400).json({
@@ -77,14 +106,22 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Trial account works regardless of database status.
     if (!isDbConnected()) {
-     return res.status(503).json({
-       message:
-         "The database is currently unreachable, so accounts can't log " +
-         "in right now. Please try again shortly.",
-     });
-   }
+      // Trial account works regardless of database status.
+      if (email === TRIAL_EMAIL && password === TRIAL_PASSWORD) {
+        return res.status(200).json({
+          message: "Login successful",
+          token: signToken(TRIAL_USER.id),
+          user: TRIAL_USER,
+        });
+      }
+
+      return res.status(503).json({
+        message:
+          "The database is currently unreachable, so accounts can't log " +
+          "in right now. Please try again shortly.",
+      });
+    }
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -104,15 +141,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-      {
-        userId: user._id,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
+    const token = signToken(user._id);
 
     res.status(200).json({
       message: "Login successful",

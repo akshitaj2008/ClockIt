@@ -1,6 +1,7 @@
 const Event = require("../models/Event");
 const { isDbConnected } = require("../utils/dbStatus");
 const memoryStore = require("../utils/memoryStore");
+const sendError = require('../utils/sendError');
 
 const WEEKDAYS = [
     "Sunday",
@@ -22,6 +23,13 @@ function withDerivedDay(body) {
     const weekday = WEEKDAYS[new Date(year, month - 1, day).getDay()];
 
     return { ...body, day: weekday };
+}
+
+// Only the attendance status can be changed through PATCH /events/:id.
+function pickEventUpdates(body = {}) {
+    return body.attendance !== undefined
+        ? { attendance: body.attendance }
+        : {};
 }
 
 function computeAttendanceStats(events) {
@@ -77,6 +85,22 @@ const createEvent = async (req, res) => {
         const userId = req.user.userId;
         const body = withDerivedDay(req.body);
 
+        if (!body.title || !String(body.title).trim()) {
+            return res.status(400).json({ message: "Event title is required" });
+        }
+
+        if (!body.date || !body.startTime || !body.endTime) {
+            return res
+                .status(400)
+                .json({ message: "Date, start time and end time are required" });
+        }
+
+        if (body.endTime <= body.startTime) {
+            return res
+                .status(400)
+                .json({ message: "End time must be after the start time" });
+        }
+
         if (!isDbConnected()) {
             const event = memoryStore.events.insert({
                 attendance: "Pending",
@@ -92,7 +116,9 @@ const createEvent = async (req, res) => {
         const event = await Event.create({ ...body, user: userId });
         res.status(201).json(event);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res
+            .status(error.name === "ValidationError" ? 400 : 500)
+            .json({ message: error.message });
     }
 };
 
@@ -110,7 +136,7 @@ const getEvents = async (req, res) => {
         const events = await Event.find({ user: userId });
         res.json(events);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        sendError(res, error);
     }
 };
 
@@ -130,7 +156,7 @@ const updateAttendance = async (req, res) => {
 
             const updated = memoryStore.events.updateById(
                 req.params.id,
-                req.body
+                pickEventUpdates(req.body)
             );
 
             return res.json(updated);
@@ -138,8 +164,8 @@ const updateAttendance = async (req, res) => {
 
         const event = await Event.findOneAndUpdate(
             { _id: req.params.id, user: userId },
-            req.body,
-            { new: true }
+            pickEventUpdates(req.body),
+            { new: true, runValidators: true }
         );
 
         if (!event) {
@@ -148,7 +174,7 @@ const updateAttendance = async (req, res) => {
 
         res.json(event);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        sendError(res, error);
     }
 };
 
@@ -163,9 +189,7 @@ const getAttendancePercentage = async (req, res) => {
 
         res.json(computeAttendanceStats(events));
     } catch (error) {
-        res.status(500).json({
-            message: error.message,
-        });
+        sendError(res, error);
     }
 };
 
@@ -203,7 +227,7 @@ const deleteEvent = async (req, res) => {
             message: "Event deleted successfully",
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        sendError(res, error);
     }
 };
 

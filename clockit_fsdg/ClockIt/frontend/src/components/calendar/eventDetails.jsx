@@ -9,7 +9,8 @@ function EventDetails({
     event,
     onClose,
     onEdit,
-    onDelete
+    onDelete,
+    onAttendanceChange
 }) {
 
     const [attendance, setAttendance] = useState(
@@ -32,12 +33,18 @@ function EventDetails({
             );
 
             setAttendance(response.data.attendance);
+            onAttendanceChange?.(event.id, response.data.attendance);
 
         } catch (error) {
 
             console.error(
                 "Error updating attendance:",
                 error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                "Could not update attendance. Please try again."
             );
 
         }
@@ -172,12 +179,14 @@ function EventDetails({
 
                 <div className="event-actions">
 
-                    <button
-                        className="edit-event-button"
-                        onClick={() => onEdit(event)}
-                    >
-                        Edit Event
-                    </button>
+                    {onEdit && (
+                        <button
+                            className="edit-event-button"
+                            onClick={() => onEdit(event)}
+                        >
+                            Edit Event
+                        </button>
+                    )}
 
 
                     <button

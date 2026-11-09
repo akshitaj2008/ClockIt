@@ -1,11 +1,24 @@
 const StudySession = require('../models/StudySession');
 const { isDbConnected } = require('../utils/dbStatus');
 const memoryStore = require('../utils/memoryStore');
+const sendError = require('../utils/sendError');
 
 exports.createSession = async (req, res) => {
   try {
     const { courseName, duration, startedAt, technique } = req.body;
     const userId = req.user.userId;
+
+    if (!courseName || !String(courseName).trim()) {
+      return res.status(400).json({ message: 'Please choose a subject first' });
+    }
+
+    if (!Number.isFinite(Number(duration)) || Number(duration) <= 0) {
+      return res.status(400).json({ message: 'Session duration must be greater than 0' });
+    }
+
+    if (!startedAt || Number.isNaN(new Date(startedAt).getTime())) {
+      return res.status(400).json({ message: 'A valid start time is required' });
+    }
 
     if (!isDbConnected()) {
       const session = memoryStore.sessions.insert({
@@ -28,7 +41,7 @@ exports.createSession = async (req, res) => {
     });
     res.status(201).json(session);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    sendError(res, err);
   }
 };
 
@@ -47,6 +60,6 @@ exports.getSessions = async (req, res) => {
     const sessions = await StudySession.find({ user: userId }).sort({ startedAt: -1 });
     res.json(sessions);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    sendError(res, err);
   }
 };

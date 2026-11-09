@@ -1,14 +1,22 @@
+// The server stores a deadline as midnight UTC of the chosen day
+// (e.g. "2026-11-10T00:00:00.000Z"). Reading it with new Date() and then
+// using local time would show the PREVIOUS day for users west of UTC, so we
+// take just the YYYY-MM-DD part and build a local date from it.
+function parseDeadline(deadline) {
+  const [year, month, day] = String(deadline).slice(0, 10).split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 function getDeadlineText(deadline) {
   if (!deadline) {
     return "No deadline";
   }
 
   const today = new Date();
-  const dueDate = new Date(deadline);
+  const dueDate = parseDeadline(deadline);
 
-  // Remove time from both dates
+  // Remove time from today's date (dueDate is already at midnight)
   today.setHours(0, 0, 0, 0);
-  dueDate.setHours(0, 0, 0, 0);
 
   const difference = dueDate - today;
   const days = Math.round(difference / (1000 * 60 * 60 * 24));
@@ -88,7 +96,7 @@ export default function TodoItem({
 
             <span>
             {task.deadline
-              ? `${new Date(task.deadline).toLocaleDateString()} • ${getDeadlineText(task.deadline)}`
+              ? `${parseDeadline(task.deadline).toLocaleDateString()} • ${getDeadlineText(task.deadline)}`
               : "No deadline"}
             </span>
           </div>

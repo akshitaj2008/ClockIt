@@ -20,18 +20,31 @@ export default function Todo({ user, onLogout }) {
   const [priorityFilter, setPriorityFilter] = useState("");
   const [search, setSearch] = useState("");
   const [showCompleted, setShowCompleted] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    // "cancelled" stops a slow, older search response from overwriting the
+    // results of a newer one while the user is still typing.
+    let cancelled = false;
+
     const loadTasks = async () => {
       try {
         const data = await getTasks(search, priorityFilter);
-        setTasks(data);
+        if (!cancelled) {
+          setTasks(Array.isArray(data) ? data : []);
+          setError("");
+        }
       } catch (error) {
         console.error("Failed to load tasks:", error);
+        if (!cancelled) setError("Could not load your tasks. Please try again.");
       }
     };
 
     loadTasks();
+
+    return () => {
+      cancelled = true;
+    };
   }, [search, priorityFilter]);
 
 
@@ -39,12 +52,14 @@ export default function Todo({ user, onLogout }) {
     
 
     if (newTask.trim() === "") {
-      console.log("TASK IS EMPTY");
+      setError("Please type a task first.");
       return;
     }
 
     try {
-      const createdTask = await createTask({
+      setError("");
+
+      await createTask({
         text: newTask,
         completed: false,
         priority: priority,
@@ -61,6 +76,7 @@ export default function Todo({ user, onLogout }) {
       setDeadline("");
     } catch (error) {
       console.error("ADD TASK ERROR:", error);
+      setError(error.message || "Could not add the task.");
     }
   }
   function handleStartEdit(taskId) {
@@ -94,6 +110,7 @@ export default function Todo({ user, onLogout }) {
       setEditText("");
     } catch (error) {
       console.error("Failed to save edit:", error);
+      setError(error.message || "Could not save your edit.");
     }
   }
 
@@ -112,6 +129,7 @@ export default function Todo({ user, onLogout }) {
       );
     } catch (error) {
       console.error("Failed to delete task:", error);
+      setError(error.message || "Could not delete the task.");
     }
   }
 
@@ -126,11 +144,11 @@ export default function Todo({ user, onLogout }) {
       await deleteCompletedTasks();
 
       const data = await getTasks(search, priorityFilter);
-      console.log("TASKS AFTER ADD:", data);
       setTasks(data);
 
     } catch (error) {
       console.error("Failed to delete completed tasks:", error);
+      setError(error.message || "Could not delete completed tasks.");
     }
   }
 
@@ -147,11 +165,11 @@ export default function Todo({ user, onLogout }) {
 
       const data = await getTasks(search, priorityFilter);
 
-      console.log("TASKS AFTER ADD:", data);
 
       setTasks(data);
     } catch (error) {
       console.error("Failed to delete overdue tasks:", error);
+      setError(error.message || "Could not delete overdue tasks.");
     }
   }
 
@@ -174,6 +192,7 @@ export default function Todo({ user, onLogout }) {
       );
     } catch (error) {
       console.error("Failed to update task: ", error);
+      setError(error.message || "Could not update the task.");
     }
   }
 
@@ -195,6 +214,12 @@ export default function Todo({ user, onLogout }) {
       <p className="titlebar">
         Completed: {completedCount} / {totalCount}
       </p>
+
+      {error && (
+        <p className="login-error" role="alert">
+          {error}
+        </p>
+      )}
 
       <input className="search-box"
         type="text"

@@ -1,30 +1,86 @@
 import { useState, useEffect, useRef } from 'react';
 import { API_BASE } from './config.js';
 import { formatDuration } from './utils.js';
+import { handleAuthFailure } from '../../services/session.js';
 
 const GOAL_SECONDS = 25 * 60;
 
 function StudyTimer({ activeSubject, activeColor, onSessionSaved }) {
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const intervalRef = useRef(null);
+  const [message, setMessage] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // The elapsed time is worked out from the real clock, not by counting
+  // setInterval ticks. Browsers slow timers down heavily in background tabs,
+  // so a tick-counting timer silently loses time whenever the student
+  // switches to another tab to study.
+  const startedAtRef = useRef(null);     // when the current run started (ms)
+  const bankedRef = useRef(0);           // seconds already counted before it
 
   useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
-    } else {
-      clearInterval(intervalRef.current);
-    }
-    return () => clearInterval(intervalRef.current);
+    if (!isRunning) return undefined;
+
+    const tick = () => {
+      const running = (Date.now() - startedAtRef.current) / 1000;
+      setSeconds(Math.floor(bankedRef.current + running));
+    };
+
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
   }, [isRunning]);
+
+  const handleStart = () => {
+    if (!activeSubject) {
+      setMessage('Add or pick a subject first, then press Start.');
+      return;
+    }
+    if (isRunning) return;
+    setMessage('');
+    startedAtRef.current = Date.now();
+    setIsRunning(true);
+  };
+
+  const pauseClock = () => {
+    if (!isRunning) return seconds;
+    const total = Math.floor(
+      bankedRef.current + (Date.now() - startedAtRef.current) / 1000
+    );
+    bankedRef.current = total;
+    setSeconds(total);
+    setIsRunning(false);
+    return total;
+  };
+
+  const handlePause = () => {
+    pauseClock();
+  };
 
   const progress = Math.min(seconds / GOAL_SECONDS, 1);
   const circumference = 2 * Math.PI * 90;
   const dashOffset = circumference * (1 - progress);
 
+  const resetClock = () => {
+    bankedRef.current = 0;
+    startedAtRef.current = null;
+    setSeconds(0);
+  };
+
   const handleStop = async () => {
-  setIsRunning(false);
-  if (seconds > 0) {
+    if (saving) return;
+
+    const total = pauseClock();
+
+    if (total <= 0) {
+      return;
+    }
+
+    if (!activeSubject) {
+      setMessage('Pick a subject before saving this session.');
+      return;
+    }
+
+    setSaving(true);
     try {
       const res = await fetch(`${API_BASE}/api/sessions`, {
         method: 'POST',
@@ -34,24 +90,31 @@ function StudyTimer({ activeSubject, activeColor, onSessionSaved }) {
         },
         body: JSON.stringify({
           courseName: activeSubject,
-          duration: seconds,
-          startedAt: new Date(Date.now() - seconds * 1000).toISOString(),
+          duration: total,
+          startedAt: new Date(Date.now() - total * 1000).toISOString(),
         }),
       });
+
+      if (handleAuthFailure(res.status)) return;
+
       if (!res.ok) {
-        const errText = await res.text();
-        console.error('Save session failed:', res.status, errText);
-        setSeconds(0);
+        const data = await res.json().catch(() => ({}));
+        // Keep the time on screen so nothing is lost - the student can retry.
+        setMessage(data.message || 'Could not save this session. Please try again.');
         return;
       }
+
       const saved = await res.json();
       onSessionSaved(saved);
+      setMessage('Session saved!');
+      resetClock();
     } catch (err) {
       console.error('Save session network error:', err);
+      setMessage("Couldn't reach the server. Your time is kept - try Stop & save again.");
+    } finally {
+      setSaving(false);
     }
-  }
-  setSeconds(0);
-};
+  };
 
   return (
     <div>
@@ -79,10 +142,19 @@ function StudyTimer({ activeSubject, activeColor, onSessionSaved }) {
       </div>
 
       <div style={styles.controls}>
-        <button style={styles.playBtn} onClick={() => setIsRunning(true)}>Start</button>
-        <button style={styles.smallBtn} onClick={() => setIsRunning(false)}>Pause</button>
-        <button style={styles.smallBtn} onClick={handleStop}>Stop & save</button>
+        <button style={styles.playBtn} onClick={handleStart} disabled={isRunning}>
+          {seconds > 0 && !isRunning ? 'Resume' : 'Start'}
+        </button>
+        <button style={styles.smallBtn} onClick={handlePause} disabled={!isRunning}>Pause</button>
+        <button style={styles.smallBtn} onClick={handleStop} disabled={saving || seconds === 0}>
+          {saving ? 'Saving...' : 'Stop & save'}
+        </button>
       </div>
+      {message && (
+        <p role="status" style={{ textAlign: 'center', color: '#93AFA0', fontSize: 13, margin: '-20px 0 24px' }}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }

@@ -23,6 +23,9 @@ function EventForm({
     const [newCategoryName, setNewCategoryName] = useState("");
     const [newCategoryColor, setNewCategoryColor] = useState("#3788d8");
 
+    // Validation message shown inside the form
+    const [formError, setFormError] = useState("");
+
     // Find weekday
     function getDayOfWeek(dateString) {
         const [year, month, day] = dateString
@@ -97,6 +100,18 @@ function EventForm({
     function handleSubmit(e) {
         e.preventDefault();
 
+        if (endTime <= startTime) {
+            setFormError("End time must be after the start time.");
+            return;
+        }
+
+        if (repeatWeekly && repeatUntil && repeatUntil < date) {
+            setFormError("\"Repeat until\" can't be before the event date.");
+            return;
+        }
+
+        setFormError("");
+
         // Use the already-computed category colour if a category is
         // selected. Otherwise use default grey.
         const eventColor = previewColor;
@@ -121,8 +136,6 @@ function EventForm({
 
                 color: eventColor
             };
-
-            console.log("Event being sent to backend:", newEvent);
 
             onSave(newEvent);
         }
@@ -367,6 +380,12 @@ function EventForm({
                         )}
 
                     </div>
+
+                    {formError && (
+                        <p role="alert" style={{ color: "#c62828", margin: "0 0 12px" }}>
+                            {formError}
+                        </p>
+                    )}
 
                     {/* Buttons */}
                     <div className="form-group">

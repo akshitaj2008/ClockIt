@@ -1,6 +1,25 @@
 const Task = require("../models/Task");
 const { isDbConnected } = require("../utils/dbStatus");
 const memoryStore = require("../utils/memoryStore");
+const sendError = require('../utils/sendError');
+
+// Only these fields may be changed through PATCH /api/tasks/:id.
+const UPDATABLE_TASK_FIELDS = ["text", "completed", "priority", "deadline"];
+
+function pickTaskUpdates(body = {}) {
+    const updates = {};
+    UPDATABLE_TASK_FIELDS.forEach((field) => {
+        if (body[field] !== undefined) {
+            updates[field] = body[field];
+        }
+    });
+    return updates;
+}
+
+// Treat the search box text literally, not as a regular expression.
+function escapeRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 // GET /api/tasks?search=&priority=
 // Scoped to the logged-in user (req.user comes from authMiddleware)
@@ -13,7 +32,7 @@ const getTasks = async (req, res) => {
             let tasks = memoryStore.tasks.find((t) => t.user === userId);
 
             if (search) {
-                const re = new RegExp(search, "i");
+                const re = new RegExp(escapeRegex(search), "i");
                 tasks = tasks.filter((t) => re.test(t.text));
             }
 
@@ -31,7 +50,7 @@ const getTasks = async (req, res) => {
         const filter = { user: userId };
 
         if (search) {
-            filter.text = { $regex: search, $options: "i" };
+            filter.text = { $regex: escapeRegex(search), $options: "i" };
         }
 
         if (priority) {
@@ -42,7 +61,7 @@ const getTasks = async (req, res) => {
 
         res.json(tasks);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        sendError(res, error);
     }
 };
 
@@ -79,7 +98,7 @@ const createTask = async (req, res) => {
 
         res.status(201).json(task);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        sendError(res, error);
     }
 };
 
@@ -99,7 +118,7 @@ const updateTask = async (req, res) => {
 
             const updated = memoryStore.tasks.updateById(
                 req.params.id,
-                req.body
+                pickTaskUpdates(req.body)
             );
 
             return res.json(updated);
@@ -107,7 +126,7 @@ const updateTask = async (req, res) => {
 
         const task = await Task.findOneAndUpdate(
             { _id: req.params.id, user: userId },
-            req.body,
+            pickTaskUpdates(req.body),
             { new: true, runValidators: true }
         );
 
@@ -117,7 +136,7 @@ const updateTask = async (req, res) => {
 
         res.json(task);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        sendError(res, error);
     }
 };
 
@@ -151,7 +170,7 @@ const deleteTask = async (req, res) => {
 
         res.json({ message: "Task deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        sendError(res, error);
     }
 };
 
@@ -177,7 +196,7 @@ const deleteCompletedTasks = async (req, res) => {
 
         res.json({ message: "Completed tasks deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        sendError(res, error);
     }
 };
 
@@ -186,15 +205,20 @@ const deleteOverdueTasks = async (req, res) => {
     try {
         const userId = req.user.userId;
 
-        if (!isDbConnected()) {
-            const now = new Date();
+        // Deadlines are stored as midnight (UTC) of the chosen day, so a task
+        // due TODAY must not count as overdue until today is over.
+        const now = new Date();
+        const startOfToday = new Date(
+            Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+        );
 
+        if (!isDbConnected()) {
             memoryStore.tasks.deleteWhere(
                 (t) =>
                     t.user === userId &&
                     !t.completed &&
                     t.deadline &&
-                    new Date(t.deadline) < now
+                    new Date(t.deadline) < startOfToday
             );
 
             return res.json({
@@ -205,12 +229,12 @@ const deleteOverdueTasks = async (req, res) => {
         await Task.deleteMany({
             user: userId,
             completed: false,
-            deadline: { $ne: null, $lt: new Date() },
+            deadline: { $ne: null, $lt: startOfToday },
         });
 
         res.json({ message: "Overdue tasks deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        sendError(res, error);
     }
 };
 

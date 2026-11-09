@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config.js";
+import { handleAuthFailure } from "./session.js";
 
 const API_URL = `${API_BASE_URL}/api/tasks`;
 
@@ -29,6 +30,8 @@ export const getTasks = async (search = "", priority = "") => {
     }
   );
 
+  handleAuthFailure(response.status);
+
   if (!response.ok) {
     throw new Error("Failed to fetch tasks");
   }
@@ -46,6 +49,8 @@ export const createTask = async (taskData) => {
     body: JSON.stringify(taskData),
   });
 
+  handleAuthFailure(response.status);
+
   if (!response.ok) {
     const data = await response.json();
     throw new Error(data.message || "Failed to create task");
@@ -61,6 +66,8 @@ export const updateTask = async (id, updates) => {
     body: JSON.stringify(updates),
   });
 
+  handleAuthFailure(response.status);
+
   if (!response.ok) {
     const data = await response.json();
     throw new Error(data.message || "Failed to update task");
@@ -75,6 +82,8 @@ export const deleteTask = async (id) => {
     headers: getAuthHeaders(),
   });
 
+  handleAuthFailure(response.status);
+
   if (!response.ok) {
     const data = await response.json();
     throw new Error(data.message || "Failed to delete task");
@@ -88,6 +97,8 @@ export const deleteCompletedTasks = async () => {
     method: "DELETE",
     headers: getAuthHeaders(),
   });
+
+  handleAuthFailure(response.status);
 
   if (!response.ok) {
     const data = await response.json();
@@ -104,6 +115,8 @@ export const deleteOverdueTasks = async () => {
     method: "DELETE",
     headers: getAuthHeaders(),
   });
+
+  handleAuthFailure(response.status);
 
   if (!response.ok) {
     const data = await response.json();
